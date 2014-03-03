@@ -192,6 +192,11 @@
    (list (read-file-name "Sourcemap File: " nil nil t)))
   (json-read-file file))
 
+;;;###autoload
+(defun sourcemap-from-string (str)
+  (interactive)
+  (json-read-from-string str))
+
 (provide 'sourcemap)
 
 ;;; sourcemap.el ends here
