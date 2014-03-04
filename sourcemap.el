@@ -44,10 +44,10 @@
            (progn
              (puthash (char-to-string char) index sourcemap--char2int-table))))
 
-(defsubst sourcemap--continuation-value-p (value)
+(defsubst sourcemap--vlq-continuation-value-p (value)
   (not (zerop (logand value sourcemap--vlq-continuation-bit))))
 
-(defsubst sourcemap--value (value)
+(defsubst sourcemap--vlq-value (value)
   (logand value sourcemap--vlq-mask))
 
 (defun sourcemap--base64-decode (char-str)
@@ -69,8 +69,8 @@
              for index = 1 then (1+ index)
              for shift = 0 then (+ shift sourcemap--vlq-shift-width)
              for digit = (sourcemap--base64-decode (char-to-string char))
-             for continue-p = (sourcemap--continuation-value-p digit)
-             for value = (sourcemap--value digit)
+             for continue-p = (sourcemap--vlq-continuation-value-p digit)
+             for value = (sourcemap--vlq-value digit)
              for result = value then (+ result (ash value shift))
              unless continue-p
              return (list :value (sourcemap--from-vlq-signed result)
