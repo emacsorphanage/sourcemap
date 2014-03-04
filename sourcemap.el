@@ -194,7 +194,6 @@
 
 ;;;###autoload
 (defun sourcemap-from-string (str)
-  (interactive)
   (json-read-from-string str))
 
 (provide 'sourcemap)
