@@ -186,6 +186,78 @@
              return (list :line (plist-get map :original-line)
                           :column (plist-get map :original-column)))))
 
+(defun sourcemap--compare-mapping (target source)
+  (let ((target-line (plist-get target :original-line))
+        (target-column (plist-get target :original-column))
+        (source-line (plist-get source :line))
+        (source-column (plist-get source :column)))
+   (cond ((< target-line source-line) 1)
+         ((> target-line source-line) -1)
+         ((< target-column source-column) 1)
+         ((> target-column source-column) -1)
+         (t 0))))
+
+(defsubst sourcemap--line-distance (src a)
+  (abs (- (plist-get src :line) (plist-get a :original-line))))
+
+(defsubst sourcemap--column-distance (src a)
+  (abs (- (plist-get src :column) (plist-get a :original-column))))
+
+(defun sourcemap--select-nearest (source low high)
+  (let ((distance-low (sourcemap--line-distance source low))
+        (distance-high (sourcemap--line-distance source high)))
+    (cond ((< distance-low distance-high) low)
+          ((> distance-low distance-high) high)
+          (t
+           (let ((distance-low (sourcemap--column-distance source low))
+                 (distance-high (sourcemap--column-distance source high)))
+            (cond ((<= distance-low distance-high) low)
+                  ((> distance-low distance-high) high)))))))
+
+(defun sourcemap--binary-search (mappings source)
+  (let ((v-mappings (vconcat mappings))
+        (low 0)
+        (high (1- (length mappings)))
+        left right finish matched last-low last-high)
+    (while (and (< low high) (not finish))
+      (let* ((middle-index (/ (+ low high) 2))
+             (middle (aref v-mappings middle-index))
+             (compare-value (sourcemap--compare-mapping middle source)))
+        (setq last-low low last-high high)
+        (cond ((= compare-value -1)
+               (setq high (1- middle-index)))
+              ((= compare-value 1)
+               (setq low (1+ middle-index)))
+              (t
+               (setq finish t
+                     matched middle)))))
+    (if finish
+        matched
+      (sourcemap--select-nearest source
+                                 (aref v-mappings last-low)
+                                 (aref v-mappings last-high)))))
+
+(defsubst sourcemap--filter-same-file (mappings source-file)
+  (cl-remove-if-not (lambda (a)
+                      (string= source-file (plist-get a :source))) mappings))
+
+;;;###autoload
+(defun sourcemap-goto-corresponding-point (props)
+  "hook function of coffee-mode. This function should not be used directly.
+This functions should be called in generated Javascript file."
+  (let ((sourcemap-file (plist-get props :sourcemap)))
+    (unless sourcemap-file
+      (error "Error: ':sourcemap' property is not set"))
+    (let* ((sourcemap (sourcemap-from-file sourcemap-file))
+           (mappings (sourcemap--parse-mappings sourcemap))
+           (source-file (plist-get props :source))
+           (samefile-mappings (sourcemap--filter-same-file mappings source-file)))
+      (if (not samefile-mappings)
+          (message "Informations in '%s' are not found" source-file)
+        (let ((nearest (sourcemap--binary-search mappings props)))
+          (forward-line (1- (plist-get nearest :generated-line)))
+          (move-to-column (plist-get nearest :generated-column)))))))
+
 ;;;###autoload
 (defun sourcemap-from-file (file)
   (interactive
