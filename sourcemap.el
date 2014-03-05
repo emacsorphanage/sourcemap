@@ -27,6 +27,9 @@
 (require 'cl-lib)
 (require 'json)
 
+(cl-defstruct sourcemap-entry
+  source generated-line generated-column original-line original-column name)
+
 (defconst sourcemap--vlq-shift-width 5)
 
 (defconst sourcemap--vlq-mask (1- (ash 1 5))
@@ -114,12 +117,12 @@
             ((string= (substring str 0 1) ",")
              (setq str (substring str 1)))
             (t
-             (let ((mapping (list :generated-line generated-line)))
+             (let ((mapping (make-sourcemap-entry :generated-line generated-line)))
                ;; Generated Column
                (setq temp (sourcemap-base64-vlq-decode str))
                (let ((current-column (+ previous-generated-column (plist-get temp :value))))
                  (setq previous-generated-column current-column)
-                 (plist-put mapping :generated-column current-column))
+                 (setf (sourcemap-entry-generated-column mapping) current-column))
 
                ;; Original source
                (setq str (plist-get temp :rest))
@@ -128,8 +131,8 @@
                  (setq temp (sourcemap-base64-vlq-decode str))
                  (let* ((source-value (plist-get temp :value))
                         (current-source (+ previous-source source-value)))
-                   (plist-put mapping :source
-                              (sourcemap--sources-at sourcemap current-source))
+                   (setf (sourcemap-entry-source mapping)
+                         (sourcemap--sources-at sourcemap current-source))
                    (cl-incf previous-source source-value))
                  (setq str (plist-get temp :rest))
                  (when (or (zerop (length str)) (sourcemap--starts-with-separator-p str))
@@ -139,13 +142,14 @@
                  (setq temp (sourcemap-base64-vlq-decode str))
                  (let ((original-line (+ previous-original-line (plist-get temp :value))))
                    (setq previous-original-line original-line)
-                   (plist-put mapping :original-line (1+ original-line))) ; 0-base
+                   (setf (sourcemap-entry-original-line mapping) (1+ original-line)))
                  (setq str (plist-get temp :rest))
 
                  ;; Original column
                  (setq temp (sourcemap-base64-vlq-decode str))
-                 (let ((original-column (+ previous-original-column (plist-get temp :value))))
-                   (plist-put mapping :original-column original-column)
+                 (let ((original-column (+ previous-original-column
+                                           (plist-get temp :value))))
+                   (setf (sourcemap-entry-original-column mapping) original-column)
                    (setq previous-original-column original-column))
                  (setq str (plist-get temp :rest))
                  ;; Original name
@@ -154,8 +158,8 @@
                    (setq temp (sourcemap-base64-vlq-decode str))
                    (let* ((name-value (plist-get temp :value))
                           (name-index (+ previous-name name-value)))
-                     (plist-put mapping
-                                :name (sourcemap--names-at sourcemap name-index))
+                     (setf (sourcemap-entry-name mapping)
+                           (sourcemap--names-at sourcemap name-index))
                      (cl-incf previous-name name-value))
                    (setq str (plist-get temp :rest))))
                (push mapping mappings)))))
@@ -167,28 +171,28 @@
         (line (plist-get props :line))
         (column (plist-get props :column)))
     (cl-loop for map in mappings
-             for source = (plist-get map :source)
-             for original-line = (plist-get map :original-line)
-             for original-column = (plist-get map :original-column)
+             for source = (sourcemap-entry-source map)
+             for original-line = (sourcemap-entry-original-line map)
+             for original-column = (sourcemap-entry-original-column map)
              when (and (string= original-source source)
                        (= original-line line) (= original-column column))
-             return (list :line (plist-get map :generated-line)
-                          :column (plist-get map :generated-column)))))
+             return (list :line (sourcemap-entry-generated-line map)
+                          :column (sourcemap-entry-generated-column map)))))
 
 (defun sourcemap-original-position-for (sourcemap &rest props)
   (let ((mappings (sourcemap--parse-mappings sourcemap))
         (line (plist-get props :line))
         (column (plist-get props :column)))
     (cl-loop for map in mappings
-             for generated-line = (plist-get map :generated-line)
-             for generated-column = (plist-get map :generated-column)
+             for generated-line = (sourcemap-entry-generated-line map)
+             for generated-column = (sourcemap-entry-generated-column map)
              when (and (= generated-line line) (= generated-column column))
-             return (list :line (plist-get map :original-line)
-                          :column (plist-get map :original-column)))))
+             return (list :line (sourcemap-entry-original-line map)
+                          :column (sourcemap-entry-original-column map)))))
 
 (defun sourcemap--compare-mapping (target source)
-  (let ((target-line (plist-get target :original-line))
-        (target-column (plist-get target :original-column))
+  (let ((target-line (sourcemap-entry-original-line target))
+        (target-column (sourcemap-entry-original-column target))
         (source-line (plist-get source :line))
         (source-column (plist-get source :column)))
    (cond ((< target-line source-line) 1)
@@ -198,10 +202,10 @@
          (t 0))))
 
 (defsubst sourcemap--line-distance (src a)
-  (abs (- (plist-get src :line) (plist-get a :original-line))))
+  (abs (- (plist-get src :line) (sourcemap-entry-original-line a))))
 
 (defsubst sourcemap--column-distance (src a)
-  (abs (- (plist-get src :column) (plist-get a :original-column))))
+  (abs (- (plist-get src :column) (sourcemap-entry-original-column a))))
 
 (defun sourcemap--select-nearest (source low high)
   (let ((distance-low (sourcemap--line-distance source low))
@@ -237,9 +241,9 @@
                                  (aref v-mappings last-low)
                                  (aref v-mappings last-high)))))
 
-(defsubst sourcemap--filter-same-file (mappings source-file)
+(defsubst sourcemap--filter-same-file (mappings source)
   (cl-remove-if-not (lambda (a)
-                      (string= source-file (plist-get a :source))) mappings))
+                      (string= source (sourcemap-entry-source a))) mappings))
 
 ;;;###autoload
 (defun sourcemap-goto-corresponding-point (props)
@@ -255,8 +259,8 @@ This functions should be called in generated Javascript file."
       (if (not samefile-mappings)
           (message "Informations in '%s' are not found" source-file)
         (let ((nearest (sourcemap--binary-search mappings props)))
-          (forward-line (1- (plist-get nearest :generated-line)))
-          (move-to-column (plist-get nearest :generated-column)))))))
+          (forward-line (1- (sourcemap-entry-generated-line nearest)))
+          (move-to-column (sourcemap-entry-generated-column nearest)))))))
 
 ;;;###autoload
 (defun sourcemap-from-file (file)
