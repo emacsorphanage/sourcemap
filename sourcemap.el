@@ -109,11 +109,11 @@
         (mappings '())
         temp (count 0))
     (while (> (length str) 0)
-      (cond ((string= (substring str 0 1) ";")
+      (cond ((= (aref str 0) ?\;)
              (setq generated-line (1+ generated-line)
                    str (substring str 1)
                    previous-generated-column 0))
-            ((string= (substring str 0 1) ",")
+            ((= (aref str 0) ?,)
              (setq str (substring str 1)))
             (t
              (let ((mapping (make-sourcemap-entry :generated-line generated-line)))
