@@ -45,7 +45,7 @@
            for index = 0 then (1+ index)
            do
            (progn
-             (puthash (char-to-string char) index sourcemap--char2int-table))))
+             (puthash char index sourcemap--char2int-table))))
 
 (defsubst sourcemap--vlq-continuation-value-p (value)
   (not (zerop (logand value sourcemap--vlq-continuation-bit))))
@@ -53,10 +53,10 @@
 (defsubst sourcemap--vlq-value (value)
   (logand value sourcemap--vlq-mask))
 
-(defun sourcemap--base64-decode (char-str)
-  (let ((val (gethash char-str sourcemap--char2int-table 'not-found)))
+(defun sourcemap--base64-decode (char)
+  (let ((val (gethash char sourcemap--char2int-table 'not-found)))
     (if (eq val 'not-found)
-        (error "Invalid input '%s'" char-str)
+        (error "Invalid input '%s'" (char-to-string char))
       val)))
 
 (defun sourcemap--from-vlq-signed (value)
@@ -67,17 +67,16 @@
       shifted)))
 
 (defun sourcemap-base64-vlq-decode (str)
-  (let ((length (length str)))
-    (cl-loop for char across str
-             for index = 1 then (1+ index)
-             for shift = 0 then (+ shift sourcemap--vlq-shift-width)
-             for digit = (sourcemap--base64-decode (char-to-string char))
-             for continue-p = (sourcemap--vlq-continuation-value-p digit)
-             for value = (sourcemap--vlq-value digit)
-             for result = value then (+ result (ash value shift))
-             unless continue-p
-             return (list :value (sourcemap--from-vlq-signed result)
-                          :rest (substring str index)))))
+  (cl-loop for char across str
+           for index = 1 then (1+ index)
+           for shift = 0 then (+ shift sourcemap--vlq-shift-width)
+           for digit = (sourcemap--base64-decode char)
+           for continue-p = (sourcemap--vlq-continuation-value-p digit)
+           for value = (sourcemap--vlq-value digit)
+           for result = value then (+ result (ash value shift))
+           unless continue-p
+           return (list :value (sourcemap--from-vlq-signed result)
+                        :rest-index index)))
 
 (defun sourcemap--parse-group (group)
   (cl-loop with sections = (split-string group ",")
@@ -124,7 +123,7 @@
                  (setf (sourcemap-entry-generated-column mapping) current-column))
 
                ;; Original source
-               (setq str (plist-get temp :rest))
+               (setq str (substring str (plist-get temp :rest-index)))
                (when (and (> (length str) 0)
                           (not (sourcemap--starts-with-separator-p str)))
                  (setq temp (sourcemap-base64-vlq-decode str))
@@ -133,7 +132,7 @@
                    (setf (sourcemap-entry-source mapping)
                          (sourcemap--sources-at sourcemap current-source))
                    (cl-incf previous-source source-value))
-                 (setq str (plist-get temp :rest))
+                 (setq str (substring str (plist-get temp :rest-index)))
                  (when (or (zerop (length str)) (sourcemap--starts-with-separator-p str))
                    (error "Found a source, but no line and column"))
 
@@ -142,7 +141,7 @@
                  (let ((original-line (+ previous-original-line (plist-get temp :value))))
                    (setq previous-original-line original-line)
                    (setf (sourcemap-entry-original-line mapping) (1+ original-line)))
-                 (setq str (plist-get temp :rest))
+                 (setq str (substring str (plist-get temp :rest-index)))
 
                  ;; Original column
                  (setq temp (sourcemap-base64-vlq-decode str))
@@ -150,7 +149,7 @@
                                            (plist-get temp :value))))
                    (setf (sourcemap-entry-original-column mapping) original-column)
                    (setq previous-original-column original-column))
-                 (setq str (plist-get temp :rest))
+                 (setq str (substring str (plist-get temp :rest-index)))
                  ;; Original name
                  (when (and (> (length str) 0)
                             (not (sourcemap--starts-with-separator-p str)))
@@ -160,7 +159,7 @@
                      (setf (sourcemap-entry-name mapping)
                            (sourcemap--names-at sourcemap name-index))
                      (cl-incf previous-name name-value))
-                   (setq str (plist-get temp :rest))))
+                   (setq str (substring str (plist-get temp :rest-index)))))
                (push mapping mappings)))))
     (reverse mappings)))
 
