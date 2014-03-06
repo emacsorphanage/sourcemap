@@ -1,4 +1,4 @@
-;;; sourcemap.el --- Sourcemap parser
+;;; sourcemap.el --- Sourcemap parser -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 by Syohei YOSHIDA
 
