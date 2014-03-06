@@ -85,8 +85,7 @@
            collect (sourcemap-base64-vlq-decode section)))
 
 (defsubst sourcemap--starts-with-separator-p (str)
-  (let ((char (substring str 0 1)))
-    (or (string= char ",") (string= char ";"))))
+  (member (aref str 0) '(?\; ?,)))
 
 (defun sourcemap--retrieve (sourcemap property)
   (let ((value (assoc-default property sourcemap)))
