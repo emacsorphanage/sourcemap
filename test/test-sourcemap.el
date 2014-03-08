@@ -49,6 +49,36 @@
     (should (= (plist-get generated :line) 2))
     (should (= (plist-get generated :column) 28))))
 
+(ert-deftest goto-corresponding-point ()
+  "Find corresponding point"
+  (let* ((sourcemap (sourcemap-from-string test-input))
+         (mappings (sourcemap--parse-mappings sourcemap)))
+    (let ((samefile-mappings (sourcemap--filter-same-file mappings "one.js")))
+      (let* ((here (make-sourcemap-entry :original-line 1 :original-column 1))
+             (nearest (sourcemap--binary-search samefile-mappings here)))
+        (should (= (sourcemap-entry-generated-line nearest) 1))
+        (should (= (sourcemap-entry-generated-column nearest) 1)))
+
+      (let* ((here (make-sourcemap-entry :original-line 2 :original-column 14))
+             (nearest (sourcemap--binary-search samefile-mappings here)))
+        (should (= (sourcemap-entry-generated-line nearest) 1))
+        (should (= (sourcemap-entry-generated-column nearest) 32))))))
+
+(ert-deftest goto-nearest-point ()
+  "Find nearest point"
+  (let* ((sourcemap (sourcemap-from-string test-input))
+         (mappings (sourcemap--parse-mappings sourcemap)))
+    (let ((samefile-mappings (sourcemap--filter-same-file mappings "two.js")))
+      (let* ((here (make-sourcemap-entry :original-line 1 :original-column 4))
+             (nearest (sourcemap--binary-search samefile-mappings here)))
+        (should (= (sourcemap-entry-generated-line nearest) 2))
+        (should (= (sourcemap-entry-generated-column nearest) 5)))
+
+      (let* ((here (make-sourcemap-entry :original-line 2 :original-column 9))
+             (nearest (sourcemap--binary-search samefile-mappings here)))
+        (should (= (sourcemap-entry-generated-line nearest) 2))
+        (should (= (sourcemap-entry-generated-column nearest) 28))))))
+
 (provide 'test-sourcemap)
 
 ;;; test-sourcemap.el ends here
