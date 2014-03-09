@@ -4,6 +4,11 @@ Source map parser in Emacs Lisp.
 Only supports decoder now.
 
 
+## Installation
+
+You can install `sourcemap.el` from [MELPA](http://melpa.milkbox.net/)
+
+
 ## Interface
 
 #### (sourcemap-from-file file)
