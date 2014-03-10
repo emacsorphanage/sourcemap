@@ -35,3 +35,15 @@ Find line and column of generated file from specified properties.
 - `:source` - source file
 - `:line` - Original line number
 - `:column` - Original column number
+
+
+#### (sourcemap-goto-corresponding-point properties)
+
+This is useful for `coffee-mode`. You can use this for moving point in compiled
+Javascript file which currespoinding to cursor point in CoffeeScript. If you
+want to use this feature, add following configuration.
+
+```lisp
+(setq coffee-args-compile '("-c" "-m"))
+(add-hook 'coffee-after-compile-hook 'sourcemap-goto-corresponding-point)
+```
