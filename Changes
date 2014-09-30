@@ -1,4 +1,7 @@
 Revision history for sourcemap.el
 
+Version 0.02 2014/09/30 syohex
+  - Fix for latest sourcemap about file path
+
 Version 0.01 2014/03/08 syohex
   - Initial version
