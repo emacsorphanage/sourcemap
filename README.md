@@ -1,6 +1,6 @@
-# sourcemap.el
+# sourcemap.el[![Build Status](https://travis-ci.org/syohex/emacs-sourcemap.png)](https://travis-ci.org/syohex/emacs-sourcemap)
 
-Source map parser in Emacs Lisp.
+sourcemap parser in Emacs Lisp.
 Only supports decoder now.
 
 
@@ -10,15 +10,6 @@ You can install `sourcemap.el` from [MELPA](http://melpa.milkbox.net/)
 
 
 ## Interface
-
-#### (sourcemap-from-file file)
-
-Parse `file` as sourcemap and return sourmap instance
-
-#### (sourcemap-from-string string)
-
-Parse `string` as sourcemap and return sourmap instance
-
 
 #### (sourcemap-original-position-for sourcemap properties)
 
@@ -60,3 +51,12 @@ this feature, add following configuration.
 - `:sourcemap` - sourcemap file
 - `:line` - line in `:source`(CoffeeScript)
 - `:column` - column in `:source`(CoffeeScript)
+
+
+#### (sourcemap-from-file file)
+
+Parse `file` as sourcemap and return sourcemap instance
+
+#### (sourcemap-from-string string)
+
+Parse `string` as sourcemap and return sourcemap instance
