@@ -245,7 +245,7 @@ This functions should be called in generated Javascript file."
       (error "Error: ':sourcemap' property is not set"))
     (let* ((sourcemap (sourcemap-from-file sourcemap-file))
            (mappings (sourcemap--parse-mappings sourcemap))
-           (source-file (plist-get props :source))
+           (source-file (file-name-nondirectory (plist-get props :source)))
            (samefile-mappings (sourcemap--filter-same-file mappings source-file)))
       (if (not samefile-mappings)
           (message "Informations in '%s' are not found" source-file)
