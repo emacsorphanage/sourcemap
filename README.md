@@ -1,4 +1,4 @@
-# sourcemap.el[![Build Status](https://travis-ci.org/syohex/emacs-sourcemap.png)](https://travis-ci.org/syohex/emacs-sourcemap)
+# sourcemap.el[![Build Status](https://travis-ci.org/syohex/emacs-sourcemap.svg)](https://travis-ci.org/syohex/emacs-sourcemap)
 
 sourcemap parser in Emacs Lisp.
 Only supports decoder now.
