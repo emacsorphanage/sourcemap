@@ -44,8 +44,7 @@
   (cl-loop for char across chars
            for index = 0 then (1+ index)
            do
-           (progn
-             (puthash char index sourcemap--char2int-table))))
+           (puthash char index sourcemap--char2int-table)))
 
 (defsubst sourcemap--vlq-continuation-value-p (value)
   (not (zerop (logand value sourcemap--vlq-continuation-bit))))
