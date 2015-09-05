@@ -6,12 +6,12 @@ Only supports decoder now.
 
 ## Installation
 
-You can install `sourcemap.el` from [MELPA](http://melpa.milkbox.net/)
+You can install `sourcemap.el` from [MELPA](https://melpa.org/)
 
 
 ## Interface
 
-#### (sourcemap-original-position-for sourcemap properties)
+#### `(sourcemap-original-position-for sourcemap properties)`
 
 Find line and column of original file from specified properties.
 
@@ -22,7 +22,7 @@ Find line and column of original file from specified properties.
 Return value is property list which has `:line` and `:column`.
 
 
-#### (sourcemap-generated-position-for sourcemap properties)
+#### `(sourcemap-generated-position-for sourcemap properties)`
 
 Find line and column of generated file from specified properties.
 
@@ -32,7 +32,7 @@ Find line and column of generated file from specified properties.
 - `:column` - Original column number
 
 
-#### (sourcemap-goto-corresponding-point properties)
+#### `(sourcemap-goto-corresponding-point properties)`
 
 Go to corres
 
@@ -53,10 +53,10 @@ this feature, add following configuration.
 - `:column` - column in `:source`(CoffeeScript)
 
 
-#### (sourcemap-from-file file)
+#### `(sourcemap-from-file file)`
 
 Parse `file` as sourcemap and return sourcemap instance
 
-#### (sourcemap-from-string string)
+#### `(sourcemap-from-string string)`
 
 Parse `string` as sourcemap and return sourcemap instance
