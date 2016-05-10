@@ -20,6 +20,7 @@ You can install `sourcemap` with the following command.
 Find line and column of original file from specified properties.
 
 `properties` is plist and shoul have following properties
+- `:source` - source file
 - `:line` - Line in generated file
 - `:column` - Column in generated file
 
@@ -31,7 +32,6 @@ Return value is property list which has `:line` and `:column`.
 Find line and column of generated file from specified properties.
 
 `properties` is `plist` and should have following properties
-- `:source` - source file
 - `:line` - Original line number
 - `:column` - Original column number
 
