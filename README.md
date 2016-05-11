@@ -19,7 +19,7 @@ You can install `sourcemap` with the following command.
 
 Find line and column of original file from specified properties.
 
-`properties` is plist and shoul have following properties
+`properties` is plist and should have following properties
 - `:source` - source file
 - `:line` - Line in generated file
 - `:column` - Column in generated file
@@ -38,11 +38,11 @@ Find line and column of generated file from specified properties.
 
 #### `(sourcemap-goto-corresponding-point properties)`
 
-Go to corres
+Go to corresponding point.
 
 This is useful for compiling command of `coffee-mode`.
-You can use this for moving point in compiled Javascript file which
-currespoinding to cursor point in CoffeeScript. If you want to use
+You can use this for moving point in compiled JavaScript file which
+corresponding to cursor point in CoffeeScript. If you want to use
 this feature, add following configuration.
 
 ```lisp
