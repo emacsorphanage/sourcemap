@@ -178,7 +178,8 @@
              for generated-line = (sourcemap-entry-generated-line map)
              for generated-column = (sourcemap-entry-generated-column map)
              when (and (= generated-line line) (= generated-column column))
-             return (list :line (sourcemap-entry-original-line map)
+             return (list :source (sourcemap-entry-source map)
+                          :line (sourcemap-entry-original-line map)
                           :column (sourcemap-entry-original-column map)))))
 
 (defun sourcemap--compare-mapping (target here)
