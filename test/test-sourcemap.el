@@ -17,8 +17,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
-
 ;;; Code:
 
 (require 'ert)
@@ -76,7 +74,5 @@
              (nearest (sourcemap--binary-search samefile-mappings here 'original t)))
         (should (= (sourcemap-entry-generated-line nearest) 2))
         (should (= (sourcemap-entry-generated-column nearest) 28))))))
-
-(provide 'test-sourcemap)
 
 ;;; test-sourcemap.el ends here
