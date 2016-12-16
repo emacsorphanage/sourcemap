@@ -1,5 +1,8 @@
 Revision history for sourcemap.el
 
+Version 0.03 2016/12/16 syohex
+  - Update minimum Emacs version for maintenance
+
 Version 0.02 2014/09/30 syohex
   - Fix for latest sourcemap about file path
 
