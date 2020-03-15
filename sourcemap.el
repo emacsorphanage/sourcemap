@@ -180,7 +180,7 @@
         ((> target-column source-column) -1)
         (t 0)))
 
-(defun sourcemap--binary-search (sourcemap here type &optional nearlest)
+(defun sourcemap--binary-search (sourcemap here type &optional nearest)
   (let ((low 0) (high (1- (length sourcemap)))
         line-fn column-fn finish matched last-low last-high
         source-line source-column)
@@ -206,7 +206,7 @@
               (t
                (setq finish t matched middle)))))
     (cond (finish matched)
-          (nearlest (sourcemap--select-nearest
+          (nearest (sourcemap--select-nearest
                      here (aref sourcemap last-low) (aref sourcemap last-high)
                      line-fn column-fn)))))
 
@@ -221,7 +221,8 @@
         (here (make-sourcemap-entry :original-line (plist-get props :line)
                                     :original-column (plist-get props :column))))
     (when samefile-map
-      (let ((ret (sourcemap--binary-search samefile-map here 'original)))
+      (let ((ret (sourcemap--binary-search samefile-map here 'original
+					   (plist-get props :nearest))))
         (when ret
           (list :line (sourcemap-entry-generated-line ret)
                 :column (sourcemap-entry-generated-column ret)))))))
@@ -229,7 +230,8 @@
 (defun sourcemap-original-position-for (sourcemap &rest props)
   (let ((here (make-sourcemap-entry :generated-line (plist-get props :line)
                                     :generated-column (plist-get props :column))))
-    (let ((ret (sourcemap--binary-search sourcemap here 'generated)))
+    (let ((ret (sourcemap--binary-search sourcemap here 'generated
+					 (plist-get props :nearest))))
       (when ret
         (list :source (sourcemap-entry-source ret)
               :line (sourcemap-entry-original-line ret)

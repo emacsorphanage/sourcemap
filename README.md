@@ -20,12 +20,12 @@ You can install `sourcemap` with the following command.
 Find line and column of original file from specified properties.
 
 `properties` is plist and should have following properties
-- `:source` - source file
 - `:line` - Line in generated file
 - `:column` - Column in generated file
 
 Return value is property list which has `:line` and `:column`.
 
+With an optional :nearest property, return the closest matching location.
 
 #### `(sourcemap-generated-position-for sourcemap properties)`
 
@@ -35,6 +35,7 @@ Find line and column of generated file from specified properties.
 - `:line` - Original line number
 - `:column` - Original column number
 
+With an optional :nearest property, return the closest matching location.
 
 #### `(sourcemap-goto-corresponding-point properties)`
 
