@@ -246,7 +246,7 @@ This functions should be called in generated Javascript file."
            (source-file (file-name-nondirectory (plist-get props :source)))
            (samefile-mappings (sourcemap--filter-same-file sourcemap source-file)))
       (if (not samefile-mappings)
-          (message "Informations in '%s' are not found" source-file)
+          (message "Information in '%s' are not found" source-file)
         (let* ((here (make-sourcemap-entry :original-line (plist-get props :line)
                                            :original-column (plist-get props :column)))
                (nearest (sourcemap--binary-search sourcemap here 'original t)))
